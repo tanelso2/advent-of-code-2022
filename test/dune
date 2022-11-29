@@ -1,0 +1,5 @@
+(library
+ (name aoc2022_test)
+ (libraries lib)
+ (inline_tests (deps (glob_files %{project_root}/inputs/day*.txt)))
+ (preprocess (pps ppx_jane)))
