@@ -1,5 +1,6 @@
 open! Base
 open! Lib.Day1
+open Stdio
 open Lib.Utils
 
 let test_input = Stdio.In_channel.read_all "../inputs/day1.txt"
@@ -38,6 +39,8 @@ let%expect_test "part1" =
     [%expect {| 71780 |}]
 
 let%expect_test "part2" =
+    printf "%d\n" (part2 example);
+    [%expect {| 45000 |}];
     (match part2' () with
      | None -> ()
      | Some x -> Stdio.printf "%d\n" x);
