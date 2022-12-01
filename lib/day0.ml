@@ -4,6 +4,7 @@ let parse s =
     String.trim s 
     |> lines_of 
     |> List.map String.trim 
+    |> List.filter (fun x -> String.length x > 0)
     |> List.map int_of_string 
 
 let count_largers (vals : int list) =

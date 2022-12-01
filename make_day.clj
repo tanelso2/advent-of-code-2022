@@ -14,11 +14,7 @@
 (defn render-file [filename args]
   (render (slurp filename) args))
 
-(def num (first *command-line-args*))
-
 (def cookie-file ".cookie-cache")
-
-(println (str "Num is " num))
 
 (defn get-cookie
   []
@@ -62,19 +58,28 @@
   (let [template "templates/test_dayx.ml"
         rendered (render-file template {:day n})
         filename (str "test/test_day" n ".ml")]
-    (spit filename rendered)))
+    (if (files/file-exists? filename)
+      (throw (Exception. (str "file " filename " already exists")))
+      (spit filename rendered))))
 
 (defn make-lib-file [n]
   (let [template "templates/dayx.ml"
         rendered (render-file template {:day n})
         filename (str "lib/day" n ".ml")]
-    (spit filename rendered)))
+    (if (files/file-exists? filename)
+      (throw (Exception. (str "file " filename " already exists")))
+      (spit filename rendered))))
 
 (defn make-day [n]
   (write-input n)
   (make-test-file n)
   (make-lib-file n))
 
-(if (some? num)
-  (make-day num)
-  (println "Usage: $FILE <num>"))
+(defn -main [& args]
+  (let [num (first args)]
+    (if (some? num)
+      (make-day num)
+      (println "Usage: $FILE <num>"))))
+
+(when (= *file* (System/getProperty "babashka.file"))
+  (apply -main *command-line-args*))

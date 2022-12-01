@@ -1,6 +1,7 @@
 let lines_of s = 
   String.split_on_char '\n' s 
-  |> List.filter (fun x -> String.length x > 0)
+
+let sum = (ListLabels.fold_left ~f:(+) ~init:0)
 
 let rec zip2_unequal (l1: 'a list) (l2: 'b list) : ('a * 'b) list = 
   match (l1,l2) with
