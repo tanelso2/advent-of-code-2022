@@ -11,6 +11,8 @@
 
 (require '[clj-toolbox.files :as files])
 
+(require '[clojure.java.shell :refer [sh]])
+
 (defn render-file [filename args]
   (render (slurp filename) args))
 
@@ -52,34 +54,45 @@
 
 (defn write-input [n]
   (let [filename (str "inputs/day" n ".txt")]
-    (spit filename (get-input-for-day n))))
+    (println (str "Making: " filename))
+    (spit filename (get-input-for-day n))
+    filename))
 
 (defn make-test-file [n]
   (let [template "templates/test_dayx.ml"
         rendered (render-file template {:day n})
         filename (str "test/test_day" n ".ml")]
+    (println (str "Making: " filename))
     (if (files/file-exists? filename)
       (throw (Exception. (str "file " filename " already exists")))
-      (spit filename rendered))))
+      (spit filename rendered)
+      filename)))
 
 (defn make-lib-file [n]
   (let [template "templates/dayx.ml"
         rendered (render-file template {:day n})
         filename (str "lib/day" n ".ml")]
+    (println (str "Making: " filename))
     (if (files/file-exists? filename)
       (throw (Exception. (str "file " filename " already exists")))
-      (spit filename rendered))))
+      (spit filename rendered)
+      filename)))
+
+(defn git-add [filename]
+  (println (str "Git adding: " filename))
+  (sh "git" "add" filename))
+
 
 (defn make-day [n]
-  (write-input n)
-  (make-test-file n)
-  (make-lib-file n))
+  (for [f [write-input make-test-file make-lib-file]]
+    (let [filename (f n)]
+      (git-add filename)))
 
 (defn -main [& args]
   (let [num (first args)]
     (if (some? num)
       (make-day num)
-      (println "Usage: $FILE <num>"))))
+      (println "Usage: bb make_day.clj <num>"))))
 
 (when (= *file* (System/getProperty "babashka.file"))
   (apply -main *command-line-args*))
