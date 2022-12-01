@@ -7,18 +7,17 @@
 (deps/add-deps '{:deps {org.clojars.tanelso2/clj-toolbox {:mvn/version "0.2.2"}
                         enlive/enlive {:mvn/version "1.1.6"}}})
 
+(require '[clj-toolbox.prelude :refer :all])
 (require '[clojure.repl :refer [doc]])
 
 (require '[clj-toolbox.files :as files])
 
+(require '[net.cgrand.enlive-html :as html])
+
 (defn render-file [filename args]
   (render (slurp filename) args))
 
-(def num (first *command-line-args*))
-
 (def cookie-file ".cookie-cache")
-
-(println (str "Num is " num))
 
 (defn get-cookie
   []
@@ -40,19 +39,33 @@
       (prompt-cookie)
       ret)))
 
+(def test-description-link "https://adventofcode.com/2021/day/1")
 (def test-input-link "https://adventofcode.com/2021/day/1/input")
 
-(defn get-input-for-day [n]
-  (let [
-        url (if (= n "0")
-              test-input-link
-              (str "https://adventofcode.com/2022/day/" n "/input"))
-        cookie (get-or-prompt-cookie)
+(defn make-aoc-request [url]
+  (let [cookie (get-or-prompt-cookie)
         resp @(http/get url {:headers {"Cookie" (str "session=" cookie)}})]
     (println (str "Url is " url))
     (if (not= 200 (:status resp))
-      (throw (Exception. "Non-200 error raised"))
+      (throw (Exception. (str "Non-200 error raised: " (:status resp))))
       (:body resp))))
+
+(defn get-input-for-day [n]
+  (let [url (if (= n 0)
+              test-input-link
+              (str "https://adventofcode.com/2022/day/" n "/input"))]
+    (make-aoc-request url)))
+
+(defn get-description-page-for-day [n]
+  (let [url (if (= n 0)
+              test-description-link
+              (str "https://adventofcode.com/2022/day/" n))]
+    (make-aoc-request url)))
+
+(defn get-description-for-day [n]
+  (let [page (get-description-page-for-day n)]
+    (-> page
+        (html/html-resource))))
 
 (defn write-input [n]
   (let [filename (str "inputs/day" n ".txt")]
@@ -75,6 +88,11 @@
   (make-test-file n)
   (make-lib-file n))
 
-(if (some? num)
-  (make-day num)
-  (println "Usage: $FILE <num>"))
+(defn -main [& args]
+  (let [num (-> (first args)
+                (parse-int))]
+    (if (some? num)
+      (do
+        (println (str "Making day " num))
+        (make-day num))
+      (println "Usage: $FILE <num>"))))
