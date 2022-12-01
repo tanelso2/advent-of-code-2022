@@ -14,18 +14,19 @@ let parse (s:string) : int list list =
     |> List.fold_left f [[]]
     |> List.filter (fun x -> List.length x > 0)
 
+let rev_compare a b = compare a b |> Int.neg
 
 let part1 (s:string) =
     let elves = parse s in
     elves
     |> List.map (ListLabels.fold_left ~f:(+) ~init:0)
-    |> List.sort (fun a b -> Int.neg @@ compare a b)
+    |> List.sort rev_compare
     |> List.hd
 
 let part2 (s:string) =
     let elves = parse s in
     elves
     |> List.map sum
-    |> List.sort (fun a b -> Int.neg @@ compare a b)
+    |> List.sort rev_compare
     |> Fun.flip Base.List.take 3
     |> sum

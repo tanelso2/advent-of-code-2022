@@ -3,6 +3,8 @@ let lines_of s =
 
 let sum = (ListLabels.fold_left ~f:(+) ~init:0)
 
+let (<<) f g x = f(g(x))
+
 let rec zip2_unequal (l1: 'a list) (l2: 'b list) : ('a * 'b) list = 
   match (l1,l2) with
   | (([],_) | (_,[])) -> []
