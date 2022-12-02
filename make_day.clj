@@ -119,11 +119,11 @@
         (if (> (count content)
                (count current-content))
           (do
-            (println (str filename "already exists, but fetched larger content than current file. Replacing"))
+            (println (str filename " already exists, but fetched larger content than current file. Replacing"))
             (spit filename content)
             filename)
           (do
-            (println (str filename "already exists, doing nothing"))
+            (println (str filename " already exists, doing nothing"))
             filename)))
       (do 
         (spit filename content)
@@ -161,7 +161,7 @@
             (git-add)))
       (do
         (println (str "Making day " day))
-        (make-day num)))))
+        (make-day day)))))
 
 (when (= *file* (System/getProperty "babashka.file"))
   (apply -main *command-line-args*))

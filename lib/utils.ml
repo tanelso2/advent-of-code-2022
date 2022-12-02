@@ -1,6 +1,10 @@
 let lines_of s = 
   String.split_on_char '\n' s 
 
+let trimmed_lines_of s =
+  String.split_on_char '\n' s
+  |> List.map String.trim
+
 let sum = (ListLabels.fold_left ~f:(+) ~init:0)
 
 let (<<) f g x = f(g(x))
