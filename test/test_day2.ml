@@ -22,6 +22,8 @@ let%expect_test "part1" =
     [%expect {| 15572 |}]
 
 let%expect_test "part2" =
+    Stdio.printf "%d\n" (part2 example);
+    [%expect {| 12 |}];
     (match part2' () with
      | None -> ()
      | Some x -> Stdio.printf "%d\n" x);
