@@ -1,3 +1,4 @@
 (library
  (name lib)
+ (libraries re)
  (preprocess (pps ppx_jane)))
