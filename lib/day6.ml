@@ -1,4 +1,4 @@
-module CharSet = Set.Make(Char)
+open Sets
 
 let find_first_n_different n s =
     let f i _ =
@@ -6,8 +6,7 @@ let find_first_n_different n s =
         then 
             let sub = String.sub s (i - n) n in
             sub
-            |> Base.String.to_list
-            |> CharSet.of_list
+            |> CharSet.of_string
             |> CharSet.cardinal 
             |> ((=) n)
         else false

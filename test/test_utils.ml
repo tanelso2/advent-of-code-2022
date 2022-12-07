@@ -1,15 +1,12 @@
 open! Base
-
-open! Lib.Utils
+open! Utils
 
 let example = {|
-
 
 
       ABC
       DEF
       GHI
-
 
 
 |}

@@ -1,7 +1,7 @@
 open! Base
 open! Lib.Day5
 
-open! Lib.Utils
+open! Utils
 
 let test_input = Stdio.In_channel.read_all "../inputs/day5.txt"
 
