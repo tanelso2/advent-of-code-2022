@@ -5,7 +5,6 @@ let trimmed_lines_of s =
   String.split_on_char '\n' s
   |> List.map String.trim
 
-
 let split_on ~sep l =
   let f acc x =
     match acc with
