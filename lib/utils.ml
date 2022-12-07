@@ -89,3 +89,16 @@ let box_trim s =
       else ()
   ) lines;
   !res_lines |> List.rev |> String.concat "\n"
+
+module Stack = struct
+  include Stack
+  let pop_n s i = 
+      let rec helper s i acc =
+          if i <= 0
+          then acc
+          else 
+              let x = Stack.pop s in
+              helper s (i - 1) (x::acc)
+      in
+      helper s i []
+end

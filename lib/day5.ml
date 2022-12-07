@@ -48,16 +48,6 @@ let parse_boxes s =
     List.iter add_to_stack box_assignments;
     res
 
-let pop_n s i = 
-    let rec helper s i acc =
-        if i <= 0
-        then acc
-        else 
-            let x = Stack.pop s in
-            helper s (i - 1) (x::acc)
-    in
-    helper s i []
-
 let parse s =
     let (boxes, instructions) = 
         lines_of s
@@ -68,12 +58,11 @@ let parse s =
 let do_instruction stacks ?(preserve_order=false) {amount;src;dest} =
     let src_stack = stacks.(src - 1) in
     let dest_stack = stacks.(dest - 1) in
-    let taken = pop_n src_stack amount in
+    let taken = Stack.pop_n src_stack amount in
     Stack.add_seq dest_stack (taken |> (if preserve_order then Fun.id else List.rev) |> List.to_seq)
 
 let tops_of_stacks stacks =
     Array.map Stack.top stacks
-
 
 let part1 (s:string) =
     let (boxes, instructions) = parse s in
