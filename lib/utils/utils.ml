@@ -7,6 +7,9 @@ module ListUtils = ListUtils
 include FunOps
 module FunOps = FunOps
 
+include RefUtils
+module RefUtils = RefUtils
+
 module Stack = struct
   include Stack
   let pop_n s i = 

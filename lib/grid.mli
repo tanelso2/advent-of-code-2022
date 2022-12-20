@@ -16,6 +16,8 @@ val upper_right : _ t -> loc
 
 val get_space : 'a t -> loc -> 'a option
 
+val get_space_exn : 'a t -> loc -> 'a
+
 val iter : ('a -> unit) -> 'a t -> unit
 
 val iteri : (loc -> 'a -> unit) -> 'a t -> unit
@@ -27,3 +29,16 @@ val count : ('a -> bool) -> 'a t -> int
 val collect : ('a -> bool) -> 'a t -> ('a * loc) list
 
 val collecti : (loc -> 'a -> bool) -> 'a t -> ('a * loc) list
+
+val rowsi : 'a t -> (loc * 'a) list list
+
+val rows : 'a t -> 'a list list
+
+val columnsi : 'a t -> (loc * 'a) list list
+
+val columns : 'a t -> 'a list list
+
+val to_left_of : 'a t -> loc -> (loc * 'a) list
+val to_right_of : 'a t -> loc -> (loc * 'a) list
+val above : 'a t -> loc -> (loc * 'a) list
+val below : 'a t -> loc -> (loc * 'a) list

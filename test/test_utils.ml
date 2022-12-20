@@ -18,3 +18,9 @@ let%test_unit "box_trim" =
   List.iter ~f:(fun l ->
     [%test_result: int] ~expect:3 (String.length l)
     ) lines
+
+let%test_unit "@.." =
+    [%test_result: int list] ~expect:[0] @@ 0 @.. 0;
+    [%test_result: int list] ~expect:[0;1] @@ 0 @.. 1;
+    [%test_result: int list] ~expect:[] @@ 1 @.. 0;
+    ()

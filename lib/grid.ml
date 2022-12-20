@@ -34,6 +34,14 @@ let get_space grid (x,y) =
   then None
   else Some (Array.get grid y |> Fun.flip Array.get x)
 
+let get_space_exn grid loc =
+  match get_space grid loc with
+  | None -> failwith "get_space_exn failed"
+  | Some v -> v
+
+let space_and_loc_exn grid loc =
+  (loc, get_space_exn grid loc)
+
 let iter f g =
     Array.iter (fun r -> Array.iter (fun v -> f v) r) g
 
@@ -66,3 +74,47 @@ let collecti pred g =
 let collect pred g =
   let pred' _ v = pred v in
   collecti pred' g
+
+let rowsi g =
+  let h = height g in
+  let row_idxes = 0 @.. (h-1) in
+  let w = width g in
+  let col_idxes = 0 @.. (w-1) in
+  List.map (fun y -> List.map (fun x -> ((x,y), get_space_exn g (x,y))) col_idxes) row_idxes
+
+let rows g =
+  rowsi g
+  |> List.map (fun r -> List.map (fun (_, o) -> o) r)
+  
+let columnsi g =
+  let h = height g in
+  let row_idxes = 0 @.. (h-1) in
+  let w = width g in
+  let col_idxes = 0 @.. (w-1) in
+  List.map (fun x -> List.map (fun y -> ((x,y), get_space_exn g (x,y))) row_idxes) col_idxes
+
+let columns g =
+  columnsi g
+  |> List.map (fun c -> List.map (fun (_, o) -> o) c)
+
+let to_left_of g (x,y) =
+  let col_idxes = List.rev @@ 0 @.. (x-1) in
+  List.map (fun curr_x -> space_and_loc_exn g (curr_x, y))  col_idxes
+  
+let to_right_of g (x,y) = 
+  let low = x+1 in
+  let high = (width g) - 1 in
+  let col_idxes = low @.. high in
+  List.map (fun curr_x -> space_and_loc_exn g (curr_x, y))  col_idxes
+
+let above g (x,y) = 
+  let low = 0 in
+  let high = y - 1 in
+  let row_idxes = List.rev @@ low @.. high in
+  List.map (fun curr_y -> space_and_loc_exn g (x, curr_y)) row_idxes
+
+let below g (x,y) =
+  let low = y + 1 in
+  let high = (height g) - 1 in
+  let row_idxes = low @.. high in
+  List.map (fun curr_y -> space_and_loc_exn g (x, curr_y)) row_idxes
