@@ -4,8 +4,9 @@ module StringUtils = StringUtils
 include ListUtils
 module ListUtils = ListUtils
 
-include FunOps
-module FunOps = FunOps
+include FunUtils
+include FunUtils.Ops
+module FunUtils = FunUtils
 
 include RefUtils
 module RefUtils = RefUtils
