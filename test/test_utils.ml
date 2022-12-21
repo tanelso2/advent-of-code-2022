@@ -24,3 +24,7 @@ let%test_unit "@.." =
     [%test_result: int list] ~expect:[0;1] @@ 0 @.. 1;
     [%test_result: int list] ~expect:[] @@ 1 @.. 0;
     ()
+
+let%test_unit "apply_n_times" =
+    [%test_result: int] ~expect:1 @@ apply_n_times ~init:0 ~f:((+) 1) 1;
+    [%test_result: int] ~expect:3 @@ apply_n_times ~init:0 ~f:((+) 1) 3

@@ -1,5 +1,7 @@
 type dir = Up | Down | Left | Right
 
+type t = dir
+
 let turn_left = function
 | Left -> Down
 | Down -> Right
@@ -27,3 +29,17 @@ let dx_dy = function
 let move (x,y) dir =
   let (dx,dy) = dx_dy dir in
   (x+dx, y+dy)
+
+let of_char = function
+| 'U' -> Up
+| 'D' -> Down
+| 'R' -> Right
+| 'L' -> Left
+| _ -> failwith "not a valid direction char"
+
+let of_string = function
+| "U" -> Up
+| "D" -> Down
+| "R" -> Right
+| "L" -> Left
+| _ -> failwith "not a valid direction string"
