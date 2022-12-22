@@ -5,16 +5,6 @@ let trimmed_lines_of s =
   String.split_on_char '\n' s
   |> List.map String.trim
 
-let split_on ~sep l =
-  let f acc x =
-    match acc with
-    | curr::rest ->
-        if x = sep
-        then []::(curr::rest)
-        else (x::curr)::rest
-    | _ -> failwith "shouldn't happen"
-  in
-  List.fold_left f [[]] l
 
 let lines_iteri f s =
   let lines = lines_of s in

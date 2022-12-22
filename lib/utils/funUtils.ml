@@ -9,6 +9,8 @@ let apply_n_times ~init ~f n =
 module Ops = struct
   let (<<) f g x = f(g(x))
 
+  let (>>) f g x = g(f(x))
+
   let (<<..) f g x y = f(g x y)
 end
 

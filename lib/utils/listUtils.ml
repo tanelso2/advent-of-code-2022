@@ -19,3 +19,14 @@ let (@..) low high =
     else helper (i+1) (i::acc)
   in
   List.rev @@ helper low []
+
+let split_on ~sep l =
+  let f acc x =
+    match acc with
+    | curr::rest ->
+        if x = sep
+        then []::(curr::rest)
+        else (x::curr)::rest
+    | _ -> failwith "shouldn't happen"
+  in
+  List.rev @@ List.fold_left f [[]] l

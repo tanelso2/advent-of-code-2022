@@ -23,3 +23,5 @@ module Stack = struct
       in
       helper s i []
 end
+
+module RegexUtils = RegexUtils
