@@ -5,6 +5,7 @@ type monkey = {
     num: int;
     mutable holding: int list;
     op: int -> int;
+    divisible_by: int;
     test: int -> bool;
     true_target: int;
     false_target: int;
@@ -26,7 +27,7 @@ let test_r = Re.Posix.compile_pat {|Test: divisible by ([0-9]+)|}
 let true_target_r = Re.Posix.compile_pat {|If true: throw to monkey ([0-9]+)|}
 let false_target_r = Re.Posix.compile_pat {|If false: throw to monkey ([0-9]+)|}
 
-let make_test d = (fun x -> x mod d = 0)
+let make_test d = (fun x -> (x mod d) = 0)
 
 let make_items s =
     String.split_on_char ',' s
@@ -58,16 +59,6 @@ let rec eval_op_with v = function
 
 let make_op_fn op = fun v -> eval_op_with v op
 
-let test_fn (s:string) =
-    let num = get_first_group num_r s |> int_of_string in
-    let items = get_first_group items_r s |> make_items in
-    let op = get_first_group op_r s |> make_op |> make_op_fn in
-    let divisible_by = get_first_group test_r s |> int_of_string in
-    let test = make_test divisible_by in
-    let true_target = get_first_group true_target_r s |> int_of_string in
-    let false_target = get_first_group false_target_r s |> int_of_string in
-    (num, items, op, divisible_by, true_target, false_target, test)
-
 let parse_monkey (s:string) : monkey = 
     let num = get_first_group num_r s |> int_of_string in
     let holding = get_first_group items_r s |> make_items in
@@ -79,6 +70,7 @@ let parse_monkey (s:string) : monkey =
     {num;
      holding;
      op;
+     divisible_by;
      test;
      true_target;
      false_target;
@@ -133,13 +125,19 @@ let part1 (s:string) =
     |> process_rounds 20
     |> monkey_business
 
+let keep_it_manageable ms v' =
+    let supermodulo = Array.map (fun {divisible_by;_} -> divisible_by) ms |> Array.to_list |> product in
+    v' mod supermodulo
+
 let process_ball' ms curr v =
+    if v < 0 then failwith "We have something that overflowed" else ();
     let v' = curr.op v in
-    let target = if curr.test v'
+    let v'' = keep_it_manageable ms v' in
+    let target = if curr.test v''
                  then curr.true_target
                  else curr.false_target
     in
-    throw_to ms target v'
+    throw_to ms target v''
 
 let process_turn' ms thrower =
     List.iter (process_ball' ms thrower) thrower.holding;

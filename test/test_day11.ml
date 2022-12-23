@@ -17,35 +17,6 @@ let example_monkey_str = box_trim {|
      If false: throw to monkey 6
 |}
 
-let%expect_test "parsing exploration" =
-    let (num,items,op,div,tt,ft, test) = test_fn example_monkey_str in
-    Stdio.printf "%d\n" num;
-    [%expect {| 0 |}];
-    Stdio.printf "%s\n" @@ Sexp.to_string ([%sexp_of: int list] items);
-    [%expect {| (52 78 79 63 51 94) |}];
-    Stdio.printf "%d\n" (op 3);
-    [%expect {| 39 |}];
-    Stdio.printf "%d\n" div;
-    [%expect {| 5 |}];
-    Stdio.printf "%d\n" tt;
-    [%expect {| 1 |}];
-    Stdio.printf "%d\n" ft;
-    [%expect {| 6 |}];
-    Stdio.printf "%b\n" (test 10);
-    [%expect {| true |}];
-    Stdio.printf "%b\n" (test 7);
-    [%expect {| false |}];
-    let monkeys = parse_monkeys test_input in
-    Stdio.printf "%d\n" @@ List.length monkeys;
-    [%expect {| 8 |}];
-    let first_monkey = List.hd_exn monkeys in
-    Stdio.printf "%d\n" @@ first_monkey.num;
-    [%expect {| 0 |}];
-    let last_monkey = List.last_exn monkeys in
-    Stdio.printf "%d\n" @@ last_monkey.num;
-    [%expect {| 7 |}];
-    Stdio.printf "%d\n" @@ last_monkey.op 2;
-    [%expect {| 4 |}]
 
 let%test_unit "parse_monkey" =
     let m = parse_monkey example_monkey_str in
@@ -114,12 +85,44 @@ let print_rounds' n =
 
 let%expect_test "part2" =
     print_rounds' 1;
-    [%expect {||}];
+    [%expect {|
+      2
+      4
+      3
+      6 |}];
     print_rounds' 20;
-    [%expect {||}];
+    [%expect {|
+      99
+      97
+      8
+      103 |}];
+    print_rounds' 1000;
+    [%expect {|
+      5204
+      4792
+      199
+      5192 |}];
+    print_rounds' 2000;
+    [%expect {|
+      10419
+      9577
+      392
+      10391 |}];
+    print_rounds' 3000;
+    [%expect {|
+      15638
+      14358
+      587
+      15593 |}];
+    print_rounds' 4000;
+    [%expect {|
+      20858
+      19138
+      780
+      20797 |}];
     Stdio.printf "%d\n" (part2 example_monkeys_str);
     [%expect {| 2713310158 |}];
     (match part2' () with
      | None -> ()
      | Some x -> Stdio.printf "%d\n" x);
-    [%expect {| |}]
+    [%expect {| 14952185856 |}]
