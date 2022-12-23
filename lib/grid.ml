@@ -11,12 +11,19 @@ and width grid =
 and height grid =
   Array.length grid
 
-let parse s (f: char -> 'a) =
+
+let parsei s (f: loc -> char -> 'a) : 'a t =
   let s = String.trim s in
   let lines = lines_of s |> List.map String.trim in
   let array_of_string s = s |> String.to_seq |> Array.of_seq in
-  let g = Array.of_list lines |> Array.map (fun s -> array_of_string s |> Array.map f) in
+  let g = Array.of_list lines 
+          |> Array.mapi (fun y s -> 
+              let chars = array_of_string s in 
+              Array.mapi (fun x c -> (f (x,y) c)) chars) in
   g
+
+let parse s (f: char -> 'a) =
+  parsei s (fun _ c -> f c)
 
 let to_string g (f: 'a -> char) : string =
   let show_row r = Array.map f r 
@@ -118,3 +125,8 @@ let below g (x,y) =
   let high = (height g) - 1 in
   let row_idxes = low @.. high in
   List.map (fun curr_y -> space_and_loc_exn g (x, curr_y)) row_idxes
+
+let get_cardinal_neighbors g (x,y) =
+  let open Direction in
+  List.map (Direction.move (x,y)) [Up;Down;Left;Right]
+  |> List.filter_map (fun loc -> get_space g loc |> Option.map (fun v -> (loc,v)))

@@ -10,6 +10,8 @@ val height : _ t -> int
 
 val parse : string -> (char -> 'a) -> 'a t
 
+val parsei: string -> (loc -> char -> 'a) -> 'a t
+
 val to_string : 'a t -> ('a -> char) -> string
 
 val upper_right : _ t -> loc
@@ -42,3 +44,5 @@ val to_left_of : 'a t -> loc -> (loc * 'a) list
 val to_right_of : 'a t -> loc -> (loc * 'a) list
 val above : 'a t -> loc -> (loc * 'a) list
 val below : 'a t -> loc -> (loc * 'a) list
+
+val get_cardinal_neighbors : 'a t -> loc -> (loc * 'a) list
