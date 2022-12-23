@@ -43,3 +43,15 @@ let of_string = function
 | "R" -> Right
 | "L" -> Left
 | _ -> failwith "not a valid direction string"
+
+let is_below (_,y1) (_,y2) =
+  y1 > y2
+
+let is_above (_,y1) (_,y2) =
+  y1 < y2
+
+let is_to_right_of (x1,_) (x2,_) =
+  x1 > x2
+
+let is_to_left_of (x1,_) (x2,_) =
+  x1 < x2

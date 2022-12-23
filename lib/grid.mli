@@ -51,11 +51,6 @@ val to_right_of : 'a t -> loc -> (loc * 'a) list
 val above : 'a t -> loc -> (loc * 'a) list
 val below : 'a t -> loc -> (loc * 'a) list
 
-val is_to_left_of : loc -> loc -> bool
-val is_to_right_of : loc -> loc -> bool
-val is_above : loc -> loc -> bool
-val is_below : loc -> loc -> bool
-
 val line_from : 'a t -> loc -> loc -> (loc * 'a) list
 
 val get_cardinal_neighbors : 'a t -> loc -> (loc * 'a) list

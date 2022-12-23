@@ -133,18 +133,6 @@ let below g (x,y) =
   let row_idxes = low @.. high in
   List.map (fun curr_y -> space_and_loc_exn g (x, curr_y)) row_idxes
 
-let is_below (_,y1) (_,y2) =
-  y1 > y2
-
-let is_above (_,y1) (_,y2) =
-  y1 < y2
-
-let is_to_right_of (x1,_) (x2,_) =
-  x1 > x2
-
-let is_to_left_of (x1,_) (x2,_) =
-  x1 < x2
-
 let line_from g start finish =
   let sv = get_space_exn g start in
   if start = finish
@@ -157,6 +145,7 @@ let line_from g start finish =
     in
     [start,sv]  @ innards @ [finish,fv]
   in
+  let open Direction in
   match List.map (fun f -> f start finish) [is_below;is_above;is_to_left_of;is_to_right_of] with
   | [true;false;false;false] -> (
       (* start is below finish *)
