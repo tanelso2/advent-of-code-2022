@@ -55,3 +55,20 @@ let is_to_right_of (x1,_) (x2,_) =
 
 let is_to_left_of (x1,_) (x2,_) =
   x1 < x2
+
+let (@->?) start finish =
+  let tests_and_dirs_to_go = [(is_below, Up);
+                              (is_above,Down);
+                              (is_to_left_of,Right);
+                              (is_to_right_of,Left)]
+  in
+  let dirs = 
+    tests_and_dirs_to_go
+    |> List.filter (fun (f,_) -> f start finish)
+    |> List.map snd
+  in
+  match dirs with
+  | [] -> `Same
+  | [d] -> `Card d
+  | [d1;d2] -> `Diag (d1, d2)
+  | _ -> failwith "Error, more than two tests passed?"

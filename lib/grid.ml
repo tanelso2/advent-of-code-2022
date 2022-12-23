@@ -143,27 +143,18 @@ let line_from g start finish =
     let innards = iter_to_finish g start
                   |> Base.List.take_while ~f:(fun (loc, _) -> idx loc != idx finish)
     in
-    [start,sv]  @ innards @ [finish,fv]
+    [start,sv] @ innards @ [finish,fv]
   in
   let open Direction in
-  match List.map (fun f -> f start finish) [is_below;is_above;is_to_left_of;is_to_right_of] with
-  | [true;false;false;false] -> (
-      (* start is below finish *)
-      get_line ~iter_to_finish:above ~idx:snd
-    )
-  | [false;true;false;false] -> (
-      (* start is above finish *)
-      get_line ~iter_to_finish:below ~idx:snd
-  )
-  | [false;false;true;false] -> (
-      (* start is to left of finish *)
-      get_line ~iter_to_finish:to_right_of ~idx:fst
-  )
-  | [false;false;false;true] -> (
-      (* start is to right of finish *)
-      get_line ~iter_to_finish:to_left_of ~idx:fst
-  )
-  | _ -> failwith "line_from failed: start and finish are not in horizontal or vertical line"
+  match start @->? finish with
+  | `Same -> failwith "start and finish are the same, we already checked for that"
+  | `Diag _ -> failwith "Cannot handle diagonal lines"
+  | `Card d ->
+    match d with
+    | Up -> get_line ~iter_to_finish:above ~idx:snd
+    | Down -> get_line ~iter_to_finish:below ~idx:snd
+    | Right -> get_line ~iter_to_finish:to_right_of ~idx:fst
+    | Left -> get_line ~iter_to_finish:to_left_of ~idx:fst
 
 let get_cardinal_neighbors g (x,y) =
   let open Direction in
