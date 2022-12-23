@@ -174,7 +174,7 @@ let line_from g start finish =
       (* start is to right of finish *)
       get_line ~iter_to_finish:to_left_of ~idx:fst
   )
-  | _ -> failwith ""
+  | _ -> failwith "line_from failed: start and finish are not in horizontal or vertical line"
 
 let get_cardinal_neighbors g (x,y) =
   let open Direction in
