@@ -150,11 +150,17 @@ let line_from g start finish =
   | `Same -> failwith "start and finish are the same, we already checked for that"
   | `Diag _ -> failwith "Cannot handle diagonal lines"
   | `Card d ->
-    match d with
-    | Up -> get_line ~iter_to_finish:above ~idx:snd
-    | Down -> get_line ~iter_to_finish:below ~idx:snd
-    | Right -> get_line ~iter_to_finish:to_right_of ~idx:fst
-    | Left -> get_line ~iter_to_finish:to_left_of ~idx:fst
+    let iter = match d with
+               | Up -> above
+               | Down -> below
+               | Right -> to_right_of
+               | Left -> to_left_of
+    in
+    let idx = match d with
+              | Up | Down -> snd
+              | Left | Right -> fst
+    in
+    get_line ~iter_to_finish:iter ~idx:idx
 
 let get_cardinal_neighbors g (x,y) =
   let open Direction in
