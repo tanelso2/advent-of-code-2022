@@ -29,7 +29,7 @@ let split_on ~sep l =
         else (x::curr)::rest
     | _ -> failwith "shouldn't happen"
   in
-  List.rev @@ List.fold_left f [[]] l
+  List.rev @@ List.map List.rev @@ List.fold_left f [[]] l
 
 let max_by (l: 'a list) ~key_fn:(f:'a -> int): 'a option =
   let elem = ref None in
