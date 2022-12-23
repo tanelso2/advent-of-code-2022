@@ -5,7 +5,7 @@ type 'a t = 'a array array
 type loc = int * int
 
 let empty_grid w h init =
-  Array.make_matrix w h init
+  Array.make_matrix h w init
 and width grid =
   Array.get grid 0 |> Array.length
 and height grid =
@@ -34,12 +34,19 @@ let to_string g (f: 'a -> char) : string =
 
 let upper_right grid = (width grid - 1, 0)
 
+let lower_left grid = (0, height grid - 1)
+
+let lower_right grid = (width grid - 1, height grid - 1)
+
 let get_space grid (x,y) =
   let w = width grid in
   let h = height grid in
   if x < 0 || x >= w || y < 0 || y >= h
   then None
-  else Some (Array.get grid y |> Fun.flip Array.get x)
+  else Some grid.(y).(x)
+
+let set_space grid v (x,y) =
+  grid.(y).(x) <- v
 
 let get_space_exn grid loc =
   match get_space grid loc with
@@ -125,6 +132,49 @@ let below g (x,y) =
   let high = (height g) - 1 in
   let row_idxes = low @.. high in
   List.map (fun curr_y -> space_and_loc_exn g (x, curr_y)) row_idxes
+
+let is_below (_,y1) (_,y2) =
+  y1 > y2
+
+let is_above (_,y1) (_,y2) =
+  y1 < y2
+
+let is_to_right_of (x1,_) (x2,_) =
+  x1 > x2
+
+let is_to_left_of (x1,_) (x2,_) =
+  x1 < x2
+
+let line_from g start finish =
+  let sv = get_space_exn g start in
+  if start = finish
+  then [start,sv]
+  else
+  let fv = get_space_exn g finish in
+  let get_line ~iter_to_finish ~(idx: loc -> int) =
+    let innards = iter_to_finish g start
+                  |> Base.List.take_while ~f:(fun (loc, _) -> idx loc != idx finish)
+    in
+    [start,sv]  @ innards @ [finish,fv]
+  in
+  match List.map (fun f -> f start finish) [is_below;is_above;is_to_left_of;is_to_right_of] with
+  | [true;false;false;false] -> (
+      (* start is below finish *)
+      get_line ~iter_to_finish:above ~idx:snd
+    )
+  | [false;true;false;false] -> (
+      (* start is above finish *)
+      get_line ~iter_to_finish:below ~idx:snd
+  )
+  | [false;false;true;false] -> (
+      (* start is to left of finish *)
+      get_line ~iter_to_finish:to_right_of ~idx:fst
+  )
+  | [false;false;false;true] -> (
+      (* start is to right of finish *)
+      get_line ~iter_to_finish:to_left_of ~idx:fst
+  )
+  | _ -> failwith ""
 
 let get_cardinal_neighbors g (x,y) =
   let open Direction in
