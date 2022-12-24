@@ -45,14 +45,14 @@ let rec fall_sand g loc =
         | None -> failwith "Shouldn't happen"
         | Some Empty -> fall_sand g below_left
         | Some _ ->
-        let below_right = Direction.move below Right in
-        match Grid.get_space g below_right with
-        | None -> failwith "Shouldn't happen"
-        | Some Empty -> fall_sand g below_right
-        | Some _ ->
-            (* Can't fall anymore, settle here *)
-            Grid.set_space g Sand loc;
-            Continue ()
+            let below_right = Direction.move below Right in
+            match Grid.get_space g below_right with
+            | None -> failwith "Shouldn't happen"
+            | Some Empty -> fall_sand g below_right
+            | Some _ ->
+                (* Can't fall anymore, settle here *)
+                Grid.set_space g Sand loc;
+                Continue ()
 
 let fill_with_sand g =
     let open Base.Continue_or_stop in
