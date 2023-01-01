@@ -56,3 +56,16 @@ let min_by_exn l ~key_fn:f =
   match min_by l ~key_fn:f with
   | Some x -> x
   | None -> failwith "min_by_exn failed"
+
+let some (l: 'a list) ~(f: 'a -> bool) =
+  match List.find_opt f l with
+  | None -> false
+  | Some _ -> true
+
+let all (l: 'a list) ~(f: 'a -> bool) =
+  let open FunUtils.Ops in
+  match List.find_opt (f >> not) l with
+  | Some _ -> 
+    (* Found something that doesn't fit *)
+    false
+  | None -> true
