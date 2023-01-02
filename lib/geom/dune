@@ -1,0 +1,4 @@
+(library
+ (name geom)
+ (libraries base utils)
+ (preprocess (pps ppx_jane)))

@@ -1,4 +1,6 @@
 open Utils
+open Geom
+open Position
 
 let manhattan_distance (x1,y1) (x2,y2) =
     abs (x1 - x2) + abs (y1 - y2)
@@ -55,6 +57,72 @@ module Sensor = struct
         in
         List.iter iter_radius (0 @.. r);
         !res
+
+    type corners = {
+        ylb: pos;
+        yub: pos;
+        xub: pos;
+        xlb: pos;
+    }
+
+    let corners t =
+        let (cx,cy) = t.sensor in
+        let r = radius t in
+        let ylb = (cx, cy - r) in
+        let yub = (cx, cy + r) in
+        let xlb = (cx - r, cy) in
+        let xub = (cx + r, cy) in
+        {ylb;yub;xlb;xub}
+
+    type edges = {
+        nw: Segment.t; 
+        ne: Segment.t;
+        sw: Segment.t;
+        se: Segment.t;
+    }
+
+    let edges t = 
+        let {ylb;yub;xlb;xub} = corners t in
+        let nw = Segment.from_points xlb ylb in
+        let ne = Segment.from_points ylb xub in
+        let se = Segment.from_points yub xub in
+        let sw = Segment.from_points xlb yub in
+        {nw;ne;se;sw}
+
+    let candidate_segments t = 
+        let {ylb;yub;xlb;xub} = corners t in
+        let mod_x f (x,y) = (f x, y) in
+        let mod_y f (x,y) = (x, f y) in
+        let plus_1 = succ in
+        let minus_1 = pred in
+        let ylb' = mod_y minus_1 ylb in
+        let yub' = mod_y plus_1 yub in
+        let xub' = mod_x plus_1 xub in
+        let xlb' = mod_x minus_1 xlb in
+        let open Segment in
+        [
+            from_points xlb' ylb';
+            from_points ylb' xub';
+            from_points yub' xub';
+            from_points xlb' yub';
+        ]
+
+    let occlude t (s: Segment.t) =
+        match s with
+        | Point (px,py) -> 
+            if covers t (px,py) 
+            then []
+            else [s]
+        | Segment _ ->
+        let {nw;ne;se;sw} = edges t in
+        let (b1,b2) =
+            match Segment.slope s with
+            | 1 -> (nw, se)
+            | -1 -> (ne,sw)
+            | _ -> failwith "day15 sensors should only be operating on lines with slopes of -1 or 1"
+        in
+        Segment.occlude_segment s b1 b2
+
 end
 
 let covered_by sensors loc =
@@ -100,27 +168,34 @@ let full_coverage sensors =
     List.map Sensor.coverage_range sensors
     |> Base.List.reduce_exn ~f:Sets.IntPairSet.union
 
-let find_empty sensors _ =
-    let _  = full_coverage sensors in
-    14,11
-    (* let is_possible loc =
-        not @@ Sets.IntPairSet.mem loc blocked
-    in
-    let rec helper x y =
-        if x > search_size
-        then helper 0 (y+1)
-        else if y > search_size
-        then failwith "Couldn't find anything"
-        else if is_possible (x,y)
-        then (x,y)
-        else helper (x+1) y
-    in
-    helper 0 0 *)
+
+let default_ub = 4000000
 
 let tuning_frequency (x,y) =
     x * 4000000 + y
 
+let find_initial_candidates ?(lb=0) ?(ub=default_ub) sensors =
+    let candidates = 
+        List.concat_map Sensor.candidate_segments sensors 
+        |> List.filter_map (fun a -> Segment.trim_to_fit a lb ub lb ub)
+    in
+    candidates
+
+let find_candidates ?(lb = 0) ?(ub = default_ub) sensors =
+    let candidates = 
+        find_initial_candidates ~lb ~ub sensors
+    in
+    let f acc sensor =
+        List.concat_map (Sensor.occlude sensor) acc
+    in
+    ListLabels.fold_left ~f:f ~init:candidates sensors
+
+let find_empty ?(ub = default_ub) sensors =
+    let candidates = find_candidates ~ub sensors in
+    let points = List.concat_map Segment.points candidates in
+    List.find (fun p -> List.for_all (fun s -> not @@ Sensor.covers s p) sensors) points
+
 let part2 (s:string) =
     let sensors = parse s in
-    find_empty sensors 4000000
+    find_empty sensors
     |> tuning_frequency

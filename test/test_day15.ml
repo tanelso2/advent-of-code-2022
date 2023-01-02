@@ -1,6 +1,7 @@
 open! Base
 open! Lib.Day15
 open! Utils
+open! Geom
 
 let test_input = Stdio.In_channel.read_all "../inputs/day15.txt"
 
@@ -42,12 +43,21 @@ let%test_unit "coverage_range" =
     let range = coverage_range s in
     [%test_result: int] ~expect:5 @@ IntPairSet.cardinal range
 
+let%expect_test "Segment.trim_to_fit" =
+    let test_segment = Segment.from_points (0,0) (20,20) in
+    let s' = Segment.trim_to_fit test_segment 0 20 0 20 in
+    (match s' with
+    | Some (Segment ((a,b),(c,d),_)) ->
+        Stdio.printf "(%d,%d) (%d,%d)\n" a b c d 
+    | _ -> ());
+    [%expect {|(0,0) (20,20)|}]
+
 let%expect_test "part2" =
     let sensors = parse example in
-    let empty = find_empty sensors 20 in
+    let empty = find_empty ~ub:20 sensors in
     Stdio.printf "%d,%d\n" (fst empty) (snd empty);
     [%expect {| 14,11 |}];
     (match part2' () with
      | None -> ()
      | Some x -> Stdio.printf "%d\n" x);
-    [%expect {| |}]
+    [%expect {| 10621647166538 |}]
