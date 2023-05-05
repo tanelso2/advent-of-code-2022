@@ -1,4 +1,4 @@
 (library
  (name utils)
- (libraries base re)
+ (libraries base re combinat)
  (preprocess (pps ppx_jane)))

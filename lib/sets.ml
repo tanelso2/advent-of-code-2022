@@ -10,3 +10,7 @@ end
 module IntPairSet = struct
   include Set.Make(Utils.IntPair)
 end
+
+module StringSet = struct
+  include Set.Make(String)
+end

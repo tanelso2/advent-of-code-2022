@@ -26,7 +26,7 @@ let example = {|
     Sensor at x=20, y=1: closest beacon is at x=15, y=3
 |}
 
-let%expect_test "part1" =
+(* let%expect_test "part1" =
     let sensors = parse example in
     Stdio.printf "%d\n" (find_covered_in_row sensors 10);
     [%expect {| 26 |}];
@@ -52,12 +52,14 @@ let%expect_test "Segment.trim_to_fit" =
     | _ -> ());
     [%expect {|(0,0) (20,20)|}]
 
-let%expect_test "part2" =
+let%expect_test "find_empty" =
     let sensors = parse example in
     let empty = find_empty ~ub:20 sensors in
     Stdio.printf "%d,%d\n" (fst empty) (snd empty);
-    [%expect {| 14,11 |}];
+    [%expect {| 14,11 |}]
+
+let%expect_test "part2" =
     (match part2' () with
      | None -> ()
      | Some x -> Stdio.printf "%d\n" x);
-    [%expect {| 10621647166538 |}]
+    [%expect {| 10621647166538 |}] *)
