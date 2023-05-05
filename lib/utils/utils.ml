@@ -1,6 +1,9 @@
 include StringUtils
 module StringUtils = StringUtils
 
+module Heap = Heap
+module Heaps = Heaps
+
 include ListUtils
 module ListUtils = ListUtils
 
@@ -27,6 +30,8 @@ end
 module RegexUtils = RegexUtils
 
 module IntPair = IntPair
+
+module StringPair = StringPair 
 
 module Map = struct
   open! Base

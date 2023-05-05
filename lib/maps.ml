@@ -8,3 +8,12 @@ module IntPairMap = struct
 
   let empty () = Map.empty (module IntPair)
 end
+
+module StringPairMap = struct
+  type k = string * string
+
+  type 'a t = (k, 'a, StringPair.comparator_witness) Map.t
+  
+  let empty () = Map.empty (module StringPair)
+
+end
