@@ -1,4 +1,4 @@
 (library
  (name lib)
- (libraries re base utils geom combinat)
+ (libraries re base utils geom)
  (preprocess (pps ppx_jane)))

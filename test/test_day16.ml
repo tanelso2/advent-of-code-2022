@@ -76,20 +76,23 @@ let%expect_test "valves with flow" =
     |}];
     let example_score = score_result m vs (Array.of_list ["DD"; "BB"; "JJ"; "HH"; "EE"; "CC"]) in
     Stdio.printf "The score was %d\n" example_score;
-    [%expect {| 
-        The score was 1651 
+    [%expect {|
+        The score was 1651
     |}];
-    let best = find_best vs in
-    Stdio.printf "The best was %d\n" best;
-    [%expect {| 
-        The best was 1651 
+    let (best, nodes_left) = find_max_journey vs in
+    Stdio.printf "The max_journey was %d\n" best;
+    Stdio.printf "There were %d nodes_left\n" (ValveSet.cardinal nodes_left);
+    [%expect {|
+        The max_journey was 1651
+        There were 0 nodes_left
     |}];
-    let best' = find_best (parse test_input) in
-    Stdio.printf "The best' was %d\n" best';
-    [%expect {| 
-        The best was 1651 
+    let (best, nodes_left) = find_max_journey (parse test_input) in
+    Stdio.printf "The max_journey was %d\n" best;
+    Stdio.printf "There were %d nodes_left\n" (ValveSet.cardinal nodes_left);
+    [%expect {|
+        The max_journey was 1595
+        There were 7 nodes_left
     |}]
-    
 
 let%expect_test "part1" =
     Stdio.printf "%d\n" (part1 example);
@@ -97,10 +100,12 @@ let%expect_test "part1" =
     (match part1' () with
      | None -> ()
      | Some x -> Stdio.printf "%d\n" x);
-    [%expect {| |}]
+    [%expect {| 1595 |}]
 
 let%expect_test "part2" =
+    Stdio.printf "%d\n" (find_max_journies (parse example));
+    [%expect {| 1707 |}];
     (match part2' () with
      | None -> ()
      | Some x -> Stdio.printf "%d\n" x);
-    [%expect {| |}]
+    [%expect {| 2189 |}]

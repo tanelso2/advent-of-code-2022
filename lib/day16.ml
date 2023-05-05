@@ -101,7 +101,136 @@ let floydwarshall vs =
         ) names;
     !dist
 
-let find_max_journey vs =
+type worker_status = 
+    AtValve of Valve.t
+    | EnRoute of int * Valve.t
+    | AllDone
+
+let enroute t dest =
+    if t = 0
+    then AtValve dest
+    else EnRoute (t, dest)
+
+let find_max_journies ?(max_time = 26) vs =
+    let m = floydwarshall vs in
+    let get_length a b =
+        Map.find_exn m (a,b)
+    in
+    let open Valve in
+    let module S = ValveSet in
+    let wait_it_out time open_flow total_flow =
+        let time_left = max_time - time in
+        total_flow + time_left * open_flow
+    in
+    let rec helper (worker1, worker2) nodes_left time open_flow total_flow =
+        if time >= max_time
+        then total_flow
+        else
+            match (worker1, worker2) with
+            | (AtValve v1, AtValve v2) -> 
+                let (time', total_flow', open_flow') =
+                    if v1.name = "AA"
+                    then 
+                        (* Don't open the starting valve *)
+                        (time, total_flow, open_flow)
+                    else
+                        (* Open both valves *)
+                        let time' = time + 1 in
+                        let total_flow' = total_flow + open_flow in
+                        let open_flow' = open_flow + v1.flow_rate + v2.flow_rate in
+                        (time', total_flow', open_flow')
+                    in
+                (match S.cardinal nodes_left with
+                | 0 -> wait_it_out time' open_flow' total_flow'
+                | 1 -> (
+                    let dest = S.min_elt nodes_left in
+                    let eta1 = get_length v1.name dest.name in
+                    let eta2 = get_length v2.name dest.name in
+                    if eta1 < eta2
+                    then helper (enroute eta1 dest, AllDone) S.empty time' open_flow' total_flow'
+                    else helper (AllDone, enroute eta2 dest) S.empty time' open_flow' total_flow'
+                ) 
+                | _ -> (
+                (* Iterate over nodes_left twice, assign a destination to each *)
+                (* recurse *)
+                let handle_worker1_dest dest1 =
+                    let eta1 = get_length v1.name dest1.name in
+                    let nodes' = S.remove dest1 nodes_left in
+                    let handle_worker2_dest dest2 =
+                        let eta2 = get_length v2.name dest2.name in
+                        let nodes'' = S.remove dest2 nodes' in
+                        helper (enroute eta1 dest1, enroute eta2 dest2) nodes'' time' open_flow' total_flow'
+                    in
+                    S.elements nodes' |> List.map handle_worker2_dest |> ListUtils.max_by_exn ~key_fn:Fun.id
+                in
+                S.elements nodes_left |> List.map handle_worker1_dest |> ListUtils.max_by_exn ~key_fn:Fun.id
+             )
+            )
+        | (AtValve v, EnRoute (eta, dest)) | (EnRoute (eta, dest), AtValve v) ->
+            (* Open valve *)
+            let time' = time + 1 in
+            let total_flow' = total_flow + open_flow in
+            let open_flow' = open_flow + v.flow_rate in
+            let worker2' = enroute (eta - 1) dest in
+            (* Find a node to go to *)
+            let handle_worker1_dest dest1 =
+                let nodes' = S.remove dest1 nodes_left in
+                let eta1 = get_length v.name dest1.name in
+                let worker1 = enroute eta1 dest1 in
+                helper (worker1, worker2') nodes' time' open_flow' total_flow'
+            in
+            if S.cardinal nodes_left = 0
+            then 
+                (* Try racing the other node to the same dest *)
+                let eta1 = get_length v.name dest.name in
+                let worker1' = enroute eta1 dest in
+                match worker2' with
+                | EnRoute (eta2', _) -> 
+                    if eta1 < eta2' 
+                    then helper (worker1', AllDone) nodes_left time' open_flow' total_flow'
+                    else helper (AllDone, worker2') nodes_left time' open_flow' total_flow'
+                | AtValve _ ->
+                    helper (AllDone, worker2') nodes_left time' open_flow' total_flow'
+                | AllDone ->
+                    helper (AllDone, AllDone) nodes_left time' open_flow' total_flow'
+            else
+                (* Try visiting all other nodes *)
+                S.to_seq nodes_left 
+                |> Seq.map handle_worker1_dest 
+                |> List.of_seq 
+                |> ListUtils.max_by_exn ~key_fn:Fun.id
+        | (EnRoute (eta1, dest1), EnRoute (eta2, dest2)) -> 
+            let travel_time = Int.min eta1 eta2 in
+            if time + travel_time > max_time
+            then wait_it_out time open_flow total_flow
+            else
+                let eta1' = eta1 - travel_time in
+                let eta2' = eta2 - travel_time in
+                let worker1' = enroute eta1' dest1 in
+                let worker2' = enroute eta2' dest2 in
+                let time' = time + travel_time in
+                let total_flow' = total_flow + (open_flow * travel_time) in
+                helper (worker1', worker2') nodes_left time' open_flow total_flow'
+        | (EnRoute (eta, dest), AllDone) | (AllDone, EnRoute (eta, dest)) ->
+            if time + eta > max_time
+            then wait_it_out time open_flow total_flow
+            else
+                let time' = time + eta in
+                let total_flow' = total_flow + (open_flow * eta) in
+                helper (AtValve dest, AllDone) nodes_left time' open_flow total_flow'
+        | (AtValve v, AllDone) | (AllDone, AtValve v) ->
+            (* Open valve *)
+            let time' = time + 1 in
+            let total_flow' = total_flow + open_flow in
+            let open_flow' = open_flow + v.flow_rate in
+            helper (AllDone, AllDone) nodes_left time' open_flow' total_flow'
+        | (AllDone, AllDone) -> wait_it_out time open_flow total_flow
+    in
+    let start = find_valve vs "AA" in
+    let dests = (S.of_list @@ valves_with_flow vs) in
+    helper (AtValve start, AtValve start) dests 0 0 0
+
+let find_max_journey ?(max_time = 30) vs  =
     let m = floydwarshall vs in
     let open Valve in
     let module S = ValveSet in
@@ -111,19 +240,19 @@ let find_max_journey vs =
             then (time, open_flow, total_flow)
             else (time + 1, open_flow + node.flow_rate, total_flow + open_flow)
         in
-        if time = 30
-        then total_flow
+        if time = max_time
+        then (total_flow, nodes_left)
         else
             let (time, open_flow, total_flow) = open_valve curr_node in
             (* Remove the current node *)
             let nodes' = S.remove curr_node nodes_left in
             (* *)
-            let travel_to_dest dest : int =
+            let travel_to_dest dest : int * S.t =
                 let travel_time = Map.find_exn m (curr_node.name, dest.name) in
-                let time_left = 30 - time in
+                let time_left = max_time - time in
                 if travel_time > time_left
                 then
-                    total_flow + (open_flow * time_left)
+                    (total_flow + (open_flow * time_left), nodes')
                 else begin
                     let total_flow = total_flow + (open_flow * travel_time) in
                     let time = time + travel_time in
@@ -131,9 +260,16 @@ let find_max_journey vs =
                 end
 
             in
-            S.to_seq nodes' |> List.of_seq |> List.map travel_to_dest |> ListUtils.max_by_exn ~key_fn:Fun.id
+            match S.to_seq nodes' |> List.of_seq |> List.map travel_to_dest |> ListUtils.max_by ~key_fn:fst with
+            | None ->
+                (* There are no nodes left to travel to. Just wait here until 30 seconds *)
+                let time_left = max_time - time in
+                (total_flow + (open_flow * time_left), S.empty)
+            | Some v -> v
     in
-    helper (find_valve vs "AA") (S.of_list @@ valves_with_flow vs) 0 0 0
+    let dests = (S.of_list @@ valves_with_flow vs) in
+    let start = find_valve vs "AA" in
+    helper start dests 0 0 0
 
 let score_result m valves order =
     let open Valve in
@@ -177,26 +313,27 @@ let score_result m valves order =
        curr_node := o
        *)
 
-let find_best vs =
-    let m = floydwarshall vs in
-    let flow_valve_names = valves_with_flow vs 
-        |> List.map Valve.get_name
-    in
-    let best_result = ref Int.min_int in
-    let check_perm perm =
-        let score = score_result m vs perm in
-        if score > !best_result
-        then best_result := score
-        else ()
-    in
-    let perms = ListUtils.permutations' flow_valve_names in
-    perms check_perm;
-    !best_result
+(* let find_best vs = *)
+(*     let m = floydwarshall vs in *)
+(*     let flow_valve_names = valves_with_flow vs  *)
+(*         |> List.map Valve.get_name *)
+(*     in *)
+(*     let best_result = ref Int.min_int in *)
+(*     let check_perm perm = *)
+(*         let score = score_result m vs perm in *)
+(*         if score > !best_result *)
+(*         then best_result := score *)
+(*         else () *)
+(*     in *)
+(*     let perms = ListUtils.permutations flow_valve_names in *)
+(*     perms check_perm; *)
+(*     !best_result *)
 
 let part1 (s:string) =
     let vs = parse s in
-    find_max_journey vs
+    let (v,_) = find_max_journey vs in
+    v
 
 let part2 (s:string) =
-    let _ = s in
-    failwith "NOIMPL"
+    let vs = parse s in
+    find_max_journies vs
