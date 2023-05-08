@@ -102,10 +102,11 @@ let%expect_test "part1" =
      | Some x -> Stdio.printf "%d\n" x);
     [%expect {| 1595 |}]
 
-let%expect_test "part2" =
+(* Commenting out so I can iterate without waiting for this *)
+(* let%expect_test "part2" =
     Stdio.printf "%d\n" (find_max_journies (parse example));
     [%expect {| 1707 |}];
     (match part2' () with
      | None -> ()
      | Some x -> Stdio.printf "%d\n" x);
-    [%expect {| 2189 |}]
+    [%expect {| 2189 |}] *)

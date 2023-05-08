@@ -48,6 +48,18 @@ let%test_unit "below" =
   [%test_result: ((int * int) * char) list] ~expect:[(0,1), 'D'; (0,2), 'G'] @@ below g2 (0,0);
   ()
 
+let%test_unit "increase_height" =
+  let g = empty_grid 4 4 0 in
+  set_space g 26 (1,1);
+  [%test_result: int option] ~expect:(Some 26) (get_space g (1,1));
+  (* Out of bounds *)
+  [%test_result: int option] ~expect:None (get_space g (0,6));
+  let g' = increase_height g 4 0 in
+  (* Shouldn't be out of bounds anymore *)
+  [%test_result: int option] ~expect:(Some 0) (get_space g' (0,6));
+  [%test_result: int option] ~expect:(Some 26) (get_space g' (1,1));
+  ()
+
 let%expect_test "line_from" =
   let short_line = line_from g (0,0) (0,0) in
   [%test_result: ((int * int) * char) list] ~expect:[((0,0), 'A')] short_line;

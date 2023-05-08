@@ -8,6 +8,8 @@ val width : _ t -> int
 
 val height : _ t -> int
 
+val increase_height : 'a t -> int -> 'a -> 'a t
+
 val parse : string -> (char -> 'a) -> 'a t
 
 val parsei: string -> (loc -> char -> 'a) -> 'a t

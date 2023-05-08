@@ -11,6 +11,17 @@ and width grid =
 and height grid =
   Array.length grid
 
+let increase_height (grid: 'a t) (amount:int) (init:'a) : 'a t =
+  let w = width grid in
+  let h = height grid in
+  let h' = h + amount in
+  let copy_or_empty i =
+    if i < h
+    then grid.(i)
+    else Array.init w (fun _ -> init)
+  in
+  let new_grid = Array.init h' copy_or_empty in
+  new_grid
 
 let parsei s (f: loc -> char -> 'a) : 'a t =
   let s = String.trim s in

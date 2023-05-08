@@ -14,6 +14,8 @@ module FunUtils = FunUtils
 include RefUtils
 module RefUtils = RefUtils
 
+module RingBuffer = RingBuffer
+
 module Stack = struct
   include Stack
   let pop_n s i = 
